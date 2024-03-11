@@ -288,6 +288,7 @@ class PushWidgetImpl : public PushWidget, public IOBSOutputEventHanlder
 
         // audio encoder
         OBSEncoder aenc;
+        OBSEncoder aaenc;
         if (config_->audioConfig.has_value()) {
             // find shared audio encoder or create new
             aenc = obs_get_encoder_by_name(AudioEncoderName().c_str());
@@ -309,6 +310,7 @@ class PushWidgetImpl : public PushWidget, public IOBSOutputEventHanlder
             }
         } else {
             aenc = obs_output_get_audio_encoder(mainOutput, 0);
+            aaenc = obs_output_get_audio_encoder(mainOutput, 1);
             using_main_audio_encoder_ = true;
         }
 
@@ -326,6 +328,9 @@ class PushWidgetImpl : public PushWidget, public IOBSOutputEventHanlder
         }
 
         obs_output_set_audio_encoder(output_, obs_encoder_get_ref(aenc), 0);
+        if(aaenc) {
+            obs_output_set_audio_encoder(output_, obs_encoder_get_ref(aaenc), 1);
+        }
         obs_output_set_video_encoder(output_, obs_encoder_get_ref(venc));
 
         return true;
@@ -346,10 +351,16 @@ class PushWidgetImpl : public PushWidget, public IOBSOutputEventHanlder
             }
             
             auto aenc = obs_output_get_audio_encoder(output_, 0);
+            auto aaenc = obs_output_get_audio_encoder(output_, 1);
             if (aenc)
             {
                 obs_output_set_audio_encoder(output_, nullptr, 0);
                 obs_encoder_release(aenc);
+            }
+            if (aaenc)
+            {
+                obs_output_set_audio_encoder(output_, nullptr, 1);
+                obs_encoder_release(aaenc);
             }
 
             return true;
