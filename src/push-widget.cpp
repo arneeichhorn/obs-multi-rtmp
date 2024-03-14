@@ -113,6 +113,7 @@ class PushWidgetImpl : public PushWidget, public IOBSOutputEventHanlder
     obs_output_t* output_ = 0;
     bool using_main_video_encoder_ = true;
     bool using_main_audio_encoder_ = true;
+    bool using_archive_audio_encoder = false;
     obs_view_t* scene_view_ = 0;
     bool isUseDelay_ = false;
 
@@ -194,16 +195,13 @@ class PushWidgetImpl : public PushWidget, public IOBSOutputEventHanlder
         }
 
         if (!using_main_audio_encoder_) {
+            blog(LOG_INFO, TAG "AE: Is not using main audio encoder");
             auto aenc = obs_output_get_audio_encoder(output_, 0);
-            auto aaenc = obs_output_get_audio_encoder(output_, 1);
             if (!aenc) {
                 blog(LOG_ERROR, TAG "Prepare output scene before encoder is created.");
                 return false;
             }
             obs_encoder_set_audio(aenc, obs_get_audio());
-            if (aaenc) {
-                obs_encoder_set_audio(aaenc, obs_get_audio());
-            }
         }
         
         return true;
@@ -292,6 +290,8 @@ class PushWidgetImpl : public PushWidget, public IOBSOutputEventHanlder
 
         // audio encoder
         OBSEncoder aenc;
+
+        // archive audio encoder
         OBSEncoder aaenc;
         if (config_->audioConfig.has_value()) {
             // find shared audio encoder or create new
@@ -332,9 +332,14 @@ class PushWidgetImpl : public PushWidget, public IOBSOutputEventHanlder
         }
 
         obs_output_set_audio_encoder(output_, obs_encoder_get_ref(aenc), 0);
-        if(aaenc) {
+
+        if(!aaenc) {
+            blog(LOG_INFO, TAG "AE: no archive audio encoder");
+        } else {
+            using_archive_audio_encoder = true;
             obs_output_set_audio_encoder(output_, obs_encoder_get_ref(aaenc), 1);
         }
+
         obs_output_set_video_encoder(output_, obs_encoder_get_ref(venc));
 
         return true;
@@ -355,12 +360,13 @@ class PushWidgetImpl : public PushWidget, public IOBSOutputEventHanlder
             }
             
             auto aenc = obs_output_get_audio_encoder(output_, 0);
-            auto aaenc = obs_output_get_audio_encoder(output_, 1);
             if (aenc)
             {
                 obs_output_set_audio_encoder(output_, nullptr, 0);
                 obs_encoder_release(aenc);
             }
+
+            auto aaenc = obs_output_get_audio_encoder(output_, 1);
             if (aaenc)
             {
                 obs_output_set_audio_encoder(output_, nullptr, 1);
@@ -460,12 +466,9 @@ class PushWidgetImpl : public PushWidget, public IOBSOutputEventHanlder
                     return "0 bps";
                 }
             }();
-
-            auto aaenc = obs_output_get_audio_encoder(output_, 1);
-            if (aaenc)
-            {
-                obs_encoder_release(aaenc);
-                msg_->setText((std::string(strDuration) + "  " + strBps + "  " + strFps + " VOD").c_str());
+            
+            if(using_archive_audio_encoder) {
+                msg_->setText((std::string(strDuration) + "  " + strBps + "  " + strFps + " (VoD Track)").c_str());
             } else {
                 msg_->setText((std::string(strDuration) + "  " + strBps + "  " + strFps).c_str());
             }
