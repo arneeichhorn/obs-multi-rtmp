@@ -195,11 +195,15 @@ class PushWidgetImpl : public PushWidget, public IOBSOutputEventHanlder
 
         if (!using_main_audio_encoder_) {
             auto aenc = obs_output_get_audio_encoder(output_, 0);
+            auto aaenc = obs_output_get_audio_encoder(output_, 1);
             if (!aenc) {
                 blog(LOG_ERROR, TAG "Prepare output scene before encoder is created.");
                 return false;
             }
             obs_encoder_set_audio(aenc, obs_get_audio());
+            if (aaenc) {
+                obs_encoder_set_audio(aaenc, obs_get_audio());
+            }
         }
         
         return true;
@@ -456,8 +460,15 @@ class PushWidgetImpl : public PushWidget, public IOBSOutputEventHanlder
                     return "0 bps";
                 }
             }();
-            
-            msg_->setText((std::string(strDuration) + "  " + strBps + "  " + strFps).c_str());
+
+            auto aaenc = obs_output_get_audio_encoder(output_, 1);
+            if (aaenc)
+            {
+                obs_encoder_release(aaenc);
+                msg_->setText((std::string(strDuration) + "  " + strBps + "  " + strFps + " VOD").c_str());
+            } else {
+                msg_->setText((std::string(strDuration) + "  " + strBps + "  " + strFps).c_str());
+            }
         }
 
         total_frames_ = new_frames;
