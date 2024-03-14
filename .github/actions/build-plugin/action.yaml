@@ -24,7 +24,7 @@ runs:
   using: composite
   steps:
     - name: Run macOS Build
-      if: runner.os == 'macOS'
+      if: false && runner.os == 'macOS'
       shell: zsh --no-rcs --errexit --pipefail {0}
       working-directory: ${{ inputs.workingDirectory }}
       env:
@@ -41,7 +41,7 @@ runs:
         .github/scripts/build-macos ${build_args}
 
     - name: Install Dependencies 🛍️
-      if: runner.os == 'Linux'
+      if: false && runner.os == 'Linux'
       shell: bash
       run: |
         : Install Dependencies 🛍️
@@ -52,7 +52,7 @@ runs:
         echo ::endgroup::
 
     - name: Run Ubuntu Build
-      if: runner.os == 'Linux'
+      if: false && runner.os == 'Linux'
       shell: zsh --no-rcs --errexit --pipefail {0}
       working-directory: ${{ inputs.workingDirectory }}
       run: |
