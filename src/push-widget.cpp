@@ -461,7 +461,7 @@ class PushWidgetImpl : public PushWidget, public IOBSOutputEventHanlder
                 }
             }();
 
-            auto aaenc = obs_output_get_audio_encoder(output_, 1);
+            auto aaenc = obs_output_get_audio_encoder(output_, 0);
             if (aaenc)
             {
                 obs_encoder_release(aaenc);
