@@ -640,7 +640,7 @@ public:
             || ev == obs_frontend_event::OBS_FRONTEND_EVENT_PROFILE_LIST_CHANGED
         ) {
             Stop();
-        } else if (ev == obs_frontend_event::OBS_FRONTEND_EVENT_STREAMING_STARTING) {
+        } else if (ev == obs_frontend_event::OBS_FRONTEND_EVENT_STREAMING_STARTED) {
             if (!IsRunning() && config_->syncStart) {
                 StartStop();
             }
