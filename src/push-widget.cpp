@@ -334,6 +334,7 @@ class PushWidgetImpl : public PushWidget, public IOBSOutputEventHanlder
         obs_output_set_audio_encoder(output_, obs_encoder_get_ref(aenc), 0);
 
         if(!aaenc) {
+            using_archive_audio_encoder = false;
             blog(LOG_INFO, TAG "AE: no archive audio encoder");
         } else {
             using_archive_audio_encoder = true;
